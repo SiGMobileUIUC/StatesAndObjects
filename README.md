@@ -128,6 +128,64 @@ struct UserDataView: View {
 }
 ```
 
-You may notice I've already included the `@ObervedObject` protocol
+You may notice I've already included the `@ObservedObject` decorator. This is to give you an example to reference when we go back to the main ContentView. Speaking of, let's make some changes to ContentView.
 
-# NEEDS WORK
+Let's start by creating an `@ObservedObject` property and initializing it with your name like so: `@ObservedObject private var user: User = User("MyName")`
+
+Next, let's make it so that every time it's daytime, the amount of days the user has been using the app goes up by one:
+```
+Button(action: {
+    self.isDaytime.toggle()
+
+    if self.isDaytime {
+        self.user.days += 1
+    }
+}) {
+    Text("Press me")
+        .padding()
+}
+```
+
+Finally, let's make sure we can see the changes we make by copy/pasting the entire view into a `NavigationView` and adding a `NavigationLink` to take us to the other view. In the end, your ContentView should look like this:
+
+```
+struct ContentView: View {
+    
+    @State private var isDaytime: Bool = true
+    @ObservedObject private var user: User = User("MyName")
+    
+    var body: some View {
+        NavigationView {
+            VStack {
+                Text(isDaytime ? "Good morning" : "Good evening")
+                Button(action: {
+                    self.isDaytime.toggle()
+                    
+                    if self.isDaytime {
+                        self.user.days += 1
+                    }
+                }) {
+                    Text("Press me")
+                        .padding()
+                }
+                
+                NavigationLink(destination: UserDataView(user: user)) {
+                    Text("Profile")
+                }
+            }
+        }
+    }
+}
+```
+
+Now, try running the app. Notice that when you go to the profile page, it shows the number of days you've "used" the app, and that when to change it, the profile changes too! This is why we would use a `ObservableObject`.
+
+## EnvironmentObject
+
+This section will get more substantial updates in the future (especially b/c when SwiftUI 2.0 comes out there will be some big differences), but in the meantime...
+
+EnvironmentObjects are similar to ObservableObjects, except EnvironmentObjects are shared throughout the app, while ObservableObjects are must be explicitly passed between views.
+
+To create an EnvironmentObject, do what you would for ObservableObjects, except replace ObservableObject/ObservedObject to EnvironmentObject.
+
+The only other thing you need to do is, in your Previews section, add the `.environmentObject(objectInitializer)` modifier to the ContentView and, in your `SceneDelegate.swift` file, add the same modifier to look like this: `window.rootViewController = UIHostingController(rootView: contentView.environmentObject(ObjectName("parameterThat'sAStringInThisCase")))`
